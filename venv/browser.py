@@ -40,6 +40,7 @@ class BrowserOpener(threading.Thread): # convert html to pdf
         self.browser.reload()
 
 
-def new(*args, **kwargs):
-    return BrowserOpener()
+# def new(*args, **kwargs):
+#     return BrowserOpener()
 
+BrowserOpener()
