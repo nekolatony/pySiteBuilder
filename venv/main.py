@@ -3,6 +3,7 @@ import cv2 as cv2
 import numpy as np
 try:
     import tkinter as tk
+    from tkinter import ttk
 except ImportError:
     import Tkinter as tk
 from tkinterhtml import HtmlFrame
@@ -14,6 +15,7 @@ from pdf2image import convert_from_path
 import webview
 from HTMLParser.Parser import *
 
+
 url = "Site/site.html"
 global HtmlViewer
 subCombonent_flag = 0
@@ -24,6 +26,11 @@ HTML_sub_Components_names ={'Heading 1':'h1','Heading 2':'h2','Heading 3':'h3','
                             ,'Anchor element - <a>':'a'}
 
 CSS_attr = {}
+HTML_attr= {}
+
+HTML_ready_code = {'progress':""""<label for="">  </label>
+
+                  <progress id="" max="" value="" > </progress>"""}
 
 
 class ToggledFrame(tk.Frame):
@@ -94,14 +101,107 @@ class Application(tk.Frame):   # tkinter window
         self.options_window = tk.Toplevel(self.master)
         self.create_options()
 
-    def add_H_P(self,tag_type):
+    def add_Progress_Bar(self, tag_type):
+
+        self.add_Global_Attributes(tag_type)
+        self.add_btn['command']= lambda : self.addPreDefinedElement(tag_type)
+
+        self.Progress_Bar_Frame = ToggledFrame(self.canv, text='Data', relief="flat", borderwidth=1)
+        self.Progress_Bar_Frame.sub_frame.grid_columnconfigure(2, weight=1)
+        self.Progress_Bar_Frame.sub_frame.grid_rowconfigure(2, weight=1)
+        self.max_label = tk.Label(self.Progress_Bar_Frame.sub_frame, text='Max:', height=1, pady=2)
+        self.max_text = tk.Text(self.Progress_Bar_Frame.sub_frame, height=1)
+
+        self.value_label = tk.Label(self.Progress_Bar_Frame.sub_frame, text='Value', height=1, pady=2)
+        self.vlaue_text = tk.Text(self.Progress_Bar_Frame.sub_frame, height=1)
+        self.max_label.grid(row=0, column=0, sticky='nsew')
+        self.max_text.grid(row=0, column=1, sticky='nsew')
+        self.value_label.grid(row=1, column=0, sticky='nsew')
+        self.vlaue_text.grid(row=1, column=1, sticky='nsew')
+        self.Progress_Bar_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global HTML_attr
+        HTML_attr['max'] = self.max_text
+        HTML_attr['value'] = self.vlaue_text
+
+
+    def add_Embeded_Content(self, tag_type):
+
+        self.add_Global_Attributes(tag_type)
+
+        self.Image_Frame = ToggledFrame(self.canv, text='Data', relief="flat", borderwidth=1)
+        self.Image_Frame.sub_frame.grid_columnconfigure(2, weight=1)
+        self.Image_Frame.sub_frame.grid_rowconfigure(2, weight=1)
+        self.source_label = tk.Label(self.Image_Frame.sub_frame, text='Source:', height=1, pady=2)
+        self.source_text = tk.Text(self.Image_Frame.sub_frame, height=1)
+
+        self.alt_label = tk.Label(self.Image_Frame.sub_frame, text='alternative text:', height=1, pady=2)
+        self.alt_text = tk.Text(self.Image_Frame.sub_frame, height=1)
+        self.source_label.grid(row=0, column=0, sticky='nsew')
+        self.source_text.grid(row=0, column=1, sticky='nsew')
+        self.alt_label.grid(row=1, column=0, sticky='nsew')
+        self.alt_text.grid(row=1, column=1, sticky='nsew')
+        self.Image_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global HTML_attr
+        HTML_attr['src'] = self.source_text
+        if tag_type == "img":
+            HTML_attr['alt'] = self.alt_text
+        else :
+            self.alt_label['text']= 'Title:'
+            HTML_attr['title'] = self.alt_text
+
+
+
+    def add_Button(self, tag_type):
+
+        self.add_Global_Attributes(tag_type)
+
+        self.Callback_Frame = ToggledFrame(self.canv, text='Callback', relief="flat", borderwidth=1)
+        self.Callback_Frame.sub_frame.grid_columnconfigure(2, weight=1)
+        self.Callback_Frame.sub_frame.grid_rowconfigure(2, weight=1)
+        self.onClick_label = tk.Label(self.Callback_Frame.sub_frame, text='onClick:', height=1, pady=2)
+        self.onClick_text = tk.Text(self.Callback_Frame.sub_frame, height=1)
+        self.btnType_label = tk.Label(self.Callback_Frame.sub_frame, text='Type:', height=1, pady=2)
+        self.btnType_text = ttk.Combobox(self.Callback_Frame.sub_frame,values=['button', 'reset', 'submit'],state="readonly")
+        self.onClick_label.grid(row=0, column=0, sticky='nsew')
+        self.onClick_text.grid(row=0, column=1, sticky='nsew')
+        self.btnType_label.grid(row=1, column=0, sticky='nsew')
+        self.btnType_text.grid(row=1, column=1, sticky='nsew')
+        self.Callback_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global HTML_attr
+        HTML_attr['type'] = self.btnType_text
+        HTML_attr['onclick'] = self.onClick_text
+
+    def add_Anchor(self, tag_type):
+
+        self.add_Global_Attributes(tag_type)
+
+        self.Href_Frame = ToggledFrame(self.canv, text='Reference', relief="flat", borderwidth=1)
+        self.Href_Frame.sub_frame.grid_columnconfigure(2, weight=1)
+        self.Href_label = tk.Label(self.Href_Frame.sub_frame, text='Href:', height=1, pady=2)
+        self.Href_text = tk.Text(self.Href_Frame.sub_frame, height=1)
+        self.Href_label.grid(row=0, column=0, sticky='nsew')
+        self.Href_text.grid(row=0, column=1, sticky='nsew')
+        self.Href_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+
+        global HTML_attr
+        HTML_attr['href'] = self.Href_text
+
+
+
+    def add_Global_Attributes(self,tag_type):
         print('add_H_P() selected ' + tag_type )
         self.CSS_frame.destroy()
-        self.CSS_frame = tk.Frame(self.options_window, relief="raised")
+        self.CSS_frame = tk.Frame(self.canv, relief="raised")
         self.CSS_frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
         if self.Dicesion_frame:
             self.Dicesion_frame.destroy()
 
+        global HTML_attr
+        HTML_attr.clear()
         global CSS_attr
         CSS_attr.clear()
 
@@ -124,18 +224,28 @@ class Application(tk.Frame):   # tkinter window
         self.setUp_Dicesion(self.addElement,tag_type)
 
     def setUp_Text(self):
-        self.Text_Frame = ToggledFrame(self.CSS_frame, text='Text', relief="flat", borderwidth=1)
+        # ------------------------------------Text-----------------------------------------------------
+
+        self.Text_Frame = ToggledFrame(self.canv, text='Text', relief="flat", borderwidth=1)
         self.Text_Frame.sub_frame.grid_rowconfigure(1, weight=1)
         self.Text_Frame.sub_frame.grid_columnconfigure(2, weight=1)
         self.text_label = tk.Label(self.Text_Frame.sub_frame, text='Text:', height=1, pady=2)
-        self.text_text = tk.Entry(self.Text_Frame.sub_frame)
+        self.text_text = tk.Text(self.Text_Frame.sub_frame,height = 4)
+        self.text_direction_label = tk.Label(self.Text_Frame.sub_frame, text='Direction:', height=1, pady=2)
+        self.text_direction_text = tk.Text(self.Text_Frame.sub_frame)
+        self.text_decoration_label = tk.Label(self.Text_Frame.sub_frame, text='Decoration:', height=1, pady=2)
+        self.text_decoration_text = tk.Text(self.Text_Frame.sub_frame)
+        self.text_overflow_label = tk.Label(self.Text_Frame.sub_frame, text='Overflow:', height=1, pady=2)
+        self.text_overflow_text = ttk.Combobox(self.Text_Frame.sub_frame,values = ['hidden','clip','ellipsis','initial','inherit'],state="readonly")
+        self.text_whiteSpace_label = tk.Label(self.Text_Frame.sub_frame, text='White space:', height=1, pady=2)
+        self.text_whiteSpcae_text = ttk.Combobox(self.Text_Frame.sub_frame,values=['normal', 'pre', 'nowrap','pre-wrap' ,'pre-line','initial', 'inherit'],state="readonly")
         self.text_label.grid(row=0, column=0, sticky='nsew')
         self.text_text.grid(row=0, column=1, sticky='nsew')
         self.Text_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
     def setUp_Padding(self):
         # ------------------------------------Padding-----------------------------------------------------
-        self.Padding_Frame = ToggledFrame(self.CSS_frame, text='Padding', relief="flat", borderwidth=1)
+        self.Padding_Frame = ToggledFrame(self.canv, text='Padding', relief="flat", borderwidth=1)
         self.Padding_Frame.sub_frame.grid_rowconfigure(2, weight=1)
         self.Padding_Frame.sub_frame.grid_columnconfigure(4, weight=1)
         self.padding_top_label = tk.Label(self.Padding_Frame.sub_frame, text='top:', height=1, pady=2)
@@ -164,7 +274,7 @@ class Application(tk.Frame):   # tkinter window
 
     def setUp_Margin(self):
         # ------------------------------------Margin-----------------------------------------------------
-        self.Margin_Frame = ToggledFrame(self.CSS_frame, text='Margin', relief="flat", borderwidth=1)
+        self.Margin_Frame = ToggledFrame(self.canv, text='Margin', relief="flat", borderwidth=1)
         self.Margin_Frame.sub_frame.grid_rowconfigure(2, weight=1)
         self.Margin_Frame.sub_frame.grid_columnconfigure(4, weight=1)
         self.margin_top_label = tk.Label(self.Margin_Frame.sub_frame, text='top:', height=1, pady=2)
@@ -193,7 +303,7 @@ class Application(tk.Frame):   # tkinter window
 
     def setUp_Dicesion(self,add_elem,tag_type):
         # ------------------------------------Dicesion-----------------------------------------------------
-        self.Dicesion_frame = tk.Frame(self.options_window, relief="raised")
+        self.Dicesion_frame = tk.Frame(self.canv, relief="raised")
         self.Dicesion_frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="s")
         self.add_btn = tk.Button(self.Dicesion_frame, text='ADD', relief="groove", justify='right',
                                  command=lambda: add_elem(tag_type))
@@ -204,7 +314,7 @@ class Application(tk.Frame):   # tkinter window
 
     def setUp_Font(self):
         # ------------------------------------Font-----------------------------------------------------
-        self.Font_Frame = ToggledFrame(self.CSS_frame, text='Font', relief="flat", borderwidth=1)
+        self.Font_Frame = ToggledFrame(self.canv, text='Font', relief="flat", borderwidth=1)
         self.Font_Frame.sub_frame.grid_rowconfigure(2, weight=1)
         self.Font_Frame.sub_frame.grid_columnconfigure(4, weight=1)
         self.font_family_label = tk.Label(self.Font_Frame.sub_frame, text='family:', height=1, pady=2)
@@ -234,7 +344,7 @@ class Application(tk.Frame):   # tkinter window
 
     def setUp_Dimensions(self):
         # ------------------------------------Dimension-----------------------------------------------------
-        self.Dimension_Frame = ToggledFrame(self.CSS_frame, text='Dimensions', relief="flat", borderwidth=1)
+        self.Dimension_Frame = ToggledFrame(self.canv, text='Dimensions', relief="flat", borderwidth=1)
         self.Dimension_Frame.sub_frame.grid_rowconfigure(3, weight=1)
         self.Dimension_Frame.sub_frame.grid_columnconfigure(4, weight=1)
         self.height_label = tk.Label(self.Dimension_Frame.sub_frame, text='Height:', height=1, pady=2)
@@ -273,7 +383,7 @@ class Application(tk.Frame):   # tkinter window
 
     def setUp_Border(self):   # work in progress
         # ------------------------------------Border-----------------------------------------------------
-        self.Border_Frame = ToggledFrame(self.CSS_frame, text='Border', relief="flat", borderwidth=1)
+        self.Border_Frame = ToggledFrame(self.canv, text='Border', relief="flat", borderwidth=1)
         self.Border_Frame.sub_frame.grid_rowconfigure(5, weight=1)
         self.Border_Frame.sub_frame.grid_columnconfigure(4, weight=1)
         self.Border_hint_label = tk.Label(self.Border_Frame.sub_frame, text='hint : width style color\nExample : 3px dotted blue', height=2, pady=2)
@@ -305,11 +415,13 @@ class Application(tk.Frame):   # tkinter window
         CSS_attr['border-color:'] = self.Border_4way_text
         CSS_attr['border-top:'] = self.Border_top_text
         CSS_attr['border-bottom:'] = self.Border_bottom_text
+        CSS_attr['border-right:'] = self.Border_right_text
+        CSS_attr['border-left:'] = self.Border_right_text
 
 
     def setUp_Background(self):
         # ------------------------------------Background-----------------------------------------------------
-        self.Background_Frame = ToggledFrame(self.CSS_frame, text='Background', relief="flat", borderwidth=1)
+        self.Background_Frame = ToggledFrame(self.canv, text='Background', relief="flat", borderwidth=1)
         self.Background_Frame.sub_frame.grid_rowconfigure(3, weight=1)
         self.Background_Frame.sub_frame.grid_columnconfigure(2, weight=1)
         self.bg_color_label = tk.Label(self.Background_Frame.sub_frame, text='background color:', height=1, pady=2)
@@ -333,7 +445,7 @@ class Application(tk.Frame):   # tkinter window
 
     def setUp_Identity(self):
         # ---------------------------------Identity-----------------------------------------------------
-        self.identity_Frame = ToggledFrame(self.CSS_frame, text='Identity', relief="flat", borderwidth=1)
+        self.identity_Frame = ToggledFrame(self.canv, text='Identity', relief="flat", borderwidth=1)
         self.identity_Frame.sub_frame.grid_rowconfigure(3, weight=1)
         self.identity_Frame.sub_frame.grid_columnconfigure(2, weight=1)
         self.id_label = tk.Label(self.identity_Frame.sub_frame, text='ID:', height=1, width=3, pady=2)
@@ -350,13 +462,25 @@ class Application(tk.Frame):   # tkinter window
         self.Hidden_text.grid(row=2, column=1, sticky='nsew')
         self.identity_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
+        global HTML_attr
+        HTML_attr['id'] = self.id_text
+        HTML_attr['class'] = self.class_text
+
 
 
     def onselect_subcomponent(self, event):  # define diffrent functions for every element type
 
         # print('onselect_subcomponent() selected ' + self.sub_components.get(self.sub_components.curselection()))
         if self.components.get(self.components.curselection()) == 'Headings and Paragragraphs':
-            self.add_H_P(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+            self.add_Global_Attributes(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+        if self.sub_components.get(self.sub_components.curselection()) == 'Anchor element - <a>':
+            self.add_Anchor(HTML_sub_Components_names['Anchor element - <a>'])
+        if self.sub_components.get(self.sub_components.curselection()) == 'Button':
+            self.add_Button(HTML_sub_Components_names['Button'])
+        if self.sub_components.get(self.sub_components.curselection()) == 'Image' or self.sub_components.get(self.sub_components.curselection()) == 'iframe':
+            self.add_Embeded_Content(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+        if self.sub_components.get(self.sub_components.curselection()) == 'Progress bar':
+            self.add_Progress_Bar(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
 
 
     def onselect_component(self,event):
@@ -373,17 +497,6 @@ class Application(tk.Frame):   # tkinter window
             self.sub_components.insert(1, 'Button', 'TextArea', 'Anchor element - <a>', 'Input', 'Select', 'Progress bar','Object')
 
     def create_widgets(self):
-        # self.siteView = tk.Frame(self.master)
-        # self.canvas = tk.Canvas(self.siteView, width = 512, height = 512)
-        # self.pages = convert_from_path('Site/site.pdf', 1)
-        # self.pages[0].save('Site/site.jpg','PNG')
-        # self.img = tk.PhotoImage(file='Site/python.png')
-        # self.canvas.create_image( 0,0, anchor='nw', image=self.img)
-        # self.canvas.grid(row=0,sticky="nsew")
-
-        # self.siteView.grid(row = 1 ,column = 2,sticky = 'nsew')
-
-
 
         self.components_frame = tk.Frame(self.master)
         self.components_label = tk.Label(self.components_frame,text = 'HTML componenets')
@@ -417,115 +530,23 @@ class Application(tk.Frame):   # tkinter window
         self.TreeView.insert(1, 'to be continued ...','TreeView of the components','is a work in progress')
 
 
-        # with open(url, 'r') as file:
-        #     # read a list of lines into data
-        #     data = file.readlines()
-        # nodes = get_DOM_Tree(data)
-
-        # self.h1_label = tk.Label(self.h1,text = 'Add h1')
-        # self.h1_label.bind('<Button>',self.h1_onClick)
-
-        # self.h2_label = tk.Button(self.h2,text = 'Add h2',command = lambda :self.addElement("h2"))
-        # self.p_label =   tk.Button(self.p,text = 'Add Paraghraph',command = lambda :self.addElement("p"))
-
-
-        # self.label.grid_rowconfigure(3,weight=1)
-        # self.label.grid_columnconfigure(4, weight=0)
-        # self.label_label = tk.Label(self.label,text = 'Add Label')
-        # self.label_label.grid(row = 0 ,column = 0,sticky = 'nsew')
-
-        # self.checkbockLabel = tk.Button(self.label,width=25,text = 'Checkbox',command = lambda :self.addLabel('checkbox'))
-        # self.dateLabel = tk.Button(self.label,width=25, text='Date', command=lambda :self.addLabel('date'))
-        # self.emailLabel = tk.Button(self.label,width=25, text='Email', command=lambda :self.addLabel('email'))
-        # self.fileLabel = tk.Button(self.label, width=25,text='file', command=lambda :self.addLabel('file'))
-        # self.passsowrdLabel = tk.Button(self.label, width=25,text='Password', command=lambda :self.addLabel('password'))
-        # self.radioLabel = tk.Button(self.label, width=25,text='Radio', command=lambda :self.addLabel('radio'))
-        # self.searchLabel = tk.Button(self.label,width=25, text='search', command=lambda :self.addLabel('search'))
-        # self.textLabel = tk.Button(self.label, width=25,text='text', command=lambda :self.addLabel('text'))
-        # self.timeLabel = tk.Button(self.label,width=25, text='time', command=lambda :self.addLabel('time'))
-        # self.urlLabel = tk.Button(self.label, width=25,text='url', command=lambda :self.addLabel('url'))
-        #
-        #
-        # self.checkbockLabel.grid(row = 1 ,column = 0,sticky = 'ns')
-        # self.dateLabel.grid(row = 1 ,column = 1,sticky = 'nsew')
-        # self.emailLabel.grid(row = 1 ,column = 2,sticky = 'nsew')
-        # self.fileLabel.grid(row = 2 ,column = 0,sticky = 'nsew')
-        # self.passsowrdLabel.grid(row = 2 ,column = 1,sticky = 'ns')
-        # self.radioLabel.grid(row = 2 ,column = 2,sticky = 'ns')
-        # self.searchLabel.grid(row = 3 ,column = 0,sticky = 'nsew')
-        # self.textLabel.grid(row = 3 ,column = 1,sticky = 'nsew')
-        # self.timeLabel.grid(row = 3 ,column = 2,sticky = 'nsew')
-        # self.urlLabel.grid(row = 4 ,column = 1,sticky = 'nsew')
-        #
-        # # self.h1_label.place(relx=0.5, rely=0.5, anchor='center')
-        # self.h1_label.grid(row = 0 ,column = 4,sticky = 'nsew')
-        # self.p_label.place(relx=0.5, rely=0.5, anchor='center')
-        # self.h2_label.place(relx=0.5, rely=0.5, anchor='center')
-        # self.label_label.place(relx=0.5, rely=0.0, anchor='n')
 
     def create_options(self):
         screen_width = self.master.winfo_screenwidth() - 400
         screen_height = self.master.winfo_screenheight()
         self.options_window.geometry('400x'+str(screen_height-80)+"+"+str(screen_width)+"+0")
-        self.Optionsscrollbar = tk.Scrollbar(self.options_window,orient=tk.VERTICAL)
+        self.canv = tk.Canvas(self.options_window,bg = 'green')
+        self.Optionsscrollbar = tk.Scrollbar(self.options_window,command = self.canv.yview)
+        # self.Optionsscrollbar.config(command=self.canv)
+        self.canv.config(yscrollcommand = self.Optionsscrollbar.set,scrollregion=self.canv.bbox("all"))
+        self.canv.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
         self.Optionsscrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.CSS_frame = tk.Frame(self.options_window,relief="raised")
+        self.CSS_frame = tk.Frame(self.canv,relief="raised")
         self.CSS_frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
-        self.Dicesion_frame = tk.Frame(self.options_window, relief="raised")
+        self.Dicesion_frame = tk.Frame(self.canv, relief="raised")
         self.Dicesion_frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="s")
 
-        # self.identity_Frame = ToggledFrame(self.CSS_frame,text='Identity', relief="flat", borderwidth=1)
-        # self.identity_Frame.sub_frame.grid_rowconfigure(2, weight=1)
-        # self.identity_Frame.sub_frame.grid_columnconfigure(2, weight=1)
-        # self.id_label = tk.Label(self.identity_Frame.sub_frame, text='ID:', height=2, width=3, pady=5)
-        # self.id_text = tk.Text(self.identity_Frame.sub_frame, height=2, width=7, pady=5)
-        # self.class_label = tk.Label(self.identity_Frame.sub_frame, text='CLass:', height=2, width=3, pady=5)
-        # self.class_text = tk.Text(self.identity_Frame.sub_frame, height=2, width=7, pady=5)
-        #
-        # self.id_label.grid(row=0, column=0, sticky='nsew')
-        # self.id_text.grid(row=0, column=1, sticky='nsew')
-        # self.class_label.grid(row=1, column=0, sticky='nsew')
-        # self.class_text.grid(row=1, column=1, sticky='nsew')
-        # self.identity_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
-        #
-        #
-        #
-        #
-        # self.position_label = ToggledFrame(self.CSS_frame,text = 'position:',relief="flat", borderwidth=1)
-        # self.position_Text = tk.Listbox(self.position_label.sub_frame,selectmode = tk.SINGLE)
-        # self.position_Text.insert(1,'relative','static','sticky','absolute','fixed')
-        # self.position_label.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
-        # self.position_Text.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
-        #
-        # self.position_Frame = ToggledFrame(self.CSS_frame,text='Position', relief="raised", borderwidth=1)
-        # self.position_Frame.sub_frame.grid_rowconfigure(2,weight=1)
-        # self.position_Frame.sub_frame.grid_columnconfigure(4, weight=1)
-        # self.top_label = tk.Label(self.position_Frame.sub_frame,text = 'top:',height=2, width=3,pady= 5)
-        # self.top_text = tk.Text(self.position_Frame.sub_frame, height=2, width=7, pady=5)
-        # self.bottom_label = tk.Label(self.position_Frame.sub_frame, text='bottom:', height=2, width=3, pady=5)
-        # self.bottom_text = tk.Text(self.position_Frame.sub_frame, height=2, width=7, pady=5)
-        # self.left_label = tk.Label(self.position_Frame.sub_frame, text='left:', height=2, width=3, pady=5)
-        # self.left_text = tk.Text(self.position_Frame.sub_frame, height=2, width=7, pady=5)
-        # self.right_label = tk.Label(self.position_Frame.sub_frame, text='right:', height=2, width=3, pady=5)
-        # self.right_text = tk.Text(self.position_Frame.sub_frame, height=2, width=7, pady=5)
-        #
-        # self.top_label.grid(row = 0 ,column = 0,sticky = 'nsew')
-        # self.top_text.grid(row = 0 ,column = 1,sticky = 'nsew')
-        # self.bottom_label.grid(row = 1 ,column = 0,sticky = 'nsew')
-        # self.bottom_text.grid(row = 1 ,column = 1,sticky = 'nsew')
-        # self.left_label.grid(row = 0 ,column = 2,sticky = 'nsew')
-        # self.left_text.grid(row = 0 ,column = 3,sticky = 'nsew')
-        # self.right_label.grid(row = 1 ,column = 2,sticky = 'nsew')
-        # self.right_text.grid(row = 1 ,column = 3,sticky = 'nsew')
-        # self.position_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
-        #
-        # self.Dicesion_frame = tk.Frame(self.options_window,relief="raised")
-        # self.Dicesion_frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="s")
-        # self.add_btn = tk.Button(self.Dicesion_frame, text='ADD', command=lambda :print('Add'),relief="groove",justify= 'right')
-        # self.cancel_btn = tk.Button(self.Dicesion_frame, text='CANCEL', command=lambda: print('cancel'),relief="groove",justify= 'left')
-        # self.add_btn.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
-        # self.cancel_btn.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
     def h1_onClick(self,event):
         print(event)
@@ -548,20 +569,30 @@ class Application(tk.Frame):   # tkinter window
         print('x'*10)
 
         style = 'style =" '
-
-        # if len(self.class_text.get("1.0",tk.END).strip()) != 0:
-        #     style = ''.join([style,'class :'+self.class_text.get("1.0",tk.END).strip()+';'])
-        # if len(self.bg_color_text.get("1.0", tk.END).strip()) != 0:
-        #     style = ''.join([style,'background-color:' + self.bg_color_text.get("1.0", tk.END).strip() + ';'])
+        attributes = ''
+        global HTML_attr
         global CSS_attr
+
+
         for attr in CSS_attr.keys():
             if len(CSS_attr[attr].get("1.0",tk.END).strip()) != 0:
-                style = ''.join([style,attr+CSS_attr[attr].get("1.0",tk.END).strip(),';'])
+                style = ''.join([style,attr,CSS_attr[attr].get("1.0",tk.END).strip(),';'])
         style= style + '"'
 
+        for attr in HTML_attr.keys():
+            # if attr == 'onclick':
+            #     attributes = ''.join([attributes, attr, '="', HTML_attr[attr].get("1.0", tk.END).strip(), '" '])
+            if len(HTML_attr[attr].get("1.0",tk.END).strip()) != 0 :
+                attributes = ''.join([attributes,attr,'="',HTML_attr[attr].get("1.0",tk.END).strip(),'" '])
+
+        if tag == 'audio':
+            attributes = ''.join(['controls ',attributes])
 
 
-        tag1 = "<"+ tag +' '+style+ '>'+self.text_text.get() +"</" + tag +">\n"
+        add_styles = lambda style:style if style != 'style =" "' else ''
+
+        print(add_styles(style) , 'ofxs')
+        tag1 = "<"+ tag+' ' + attributes +' '+add_styles(style)+ '>'+self.text_text.get('1.0',tk.END) +"</" + tag +">\n"
         data.insert(cnt + 1, """                    """ +tag1)
         # print(tag1)
         # and write everything back
@@ -574,6 +605,58 @@ class Application(tk.Frame):   # tkinter window
         #     data = file.readlines()
         #     print(data)
 
+
+    def addPreDefinedElement(self, tag):
+
+        with open(url, 'r') as file:
+            # read a list of lines into data
+            data = file.readlines()
+
+        cnt = 0
+        for line in data:
+            if line.find('<body>') != -1:
+                break;
+                print('found it')
+            cnt = cnt + 1
+
+        style = 'style =" '
+        attributes = ''
+        global HTML_attr
+        global CSS_attr
+        global HTML_ready_code
+        code = str('')
+        code = HTML_ready_code[tag]
+
+        for attr in CSS_attr.keys():
+            if len(CSS_attr[attr].get("1.0",tk.END).strip()) != 0:
+                style = ''.join([style,attr,CSS_attr[attr].get("1.0",tk.END).strip(),';'])
+        style= style + '"'
+
+
+        code = code[:code.find('<label for="">') + len('<label for="">')] + self.text_text.get('1.0',tk.END) + code[code.find('<label for="">') + len('<label for="">'):]
+        code =code[:code.find('for=""')+len('for=""')] + style+code[code.find('for=""')+len('for=""'):]
+        code =code[:code.find('for="')+len('for="')] + HTML_attr['id'].get("1.0",tk.END).strip()+code[code.find('for="')+len('for="'):]
+
+        code =code[:code.find('id="') + len('id="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('id="') + len('id="'):]
+
+        code =code[:code.find('value="')+len('value="')] + HTML_attr['value'].get("1.0",tk.END).strip()+code[code.find('value="')+len('value="'):]
+
+        code =code[:code.find('max="') + len('max="')] + HTML_attr['max'].get("1.0", tk.END).strip() + code[code.find('max="') + len('max="'):]
+
+
+        add_styles = lambda style:style if style != 'style =" "' else ''
+
+        data.insert(cnt + 1, """                    """ +code)
+        # print(tag1)
+        # and write everything back
+        with open(url, 'w') as file:
+            file.writelines(data)
+        # PDFConverter()
+
+        # with open(url, 'r') as file:
+        #     # read a list of lines into data
+        #     data = file.readlines()
+        #     print(data)
 
 
     def addP(self):
