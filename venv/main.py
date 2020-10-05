@@ -28,9 +28,21 @@ HTML_sub_Components_names ={'Heading 1':'h1','Heading 2':'h2','Heading 3':'h3','
 CSS_attr = {}
 HTML_attr= {}
 
+top_level_widgets = []
+
 HTML_ready_code = {'progress':""""<label for="">  </label>
 
-                  <progress id="" max="" value="" > </progress>"""}
+                  <progress id="" max="" value="" > </progress>"""
+                   ,"datalist":"""<datalist id="">
+                     <option value="">
+                    </datalist>"""
+                   ,'ul':"""<ul>         </ul>"""
+                   ,'ol':"""<ol>         </ol>"""
+                   ,'picture':'''
+                   <picture>
+                    <source media="" srcset="">
+                   <img src="" alt="" /></picture>'''
+                   ,'object':'''<object  data="" type=""></object>'''}
 
 
 class ToggledFrame(tk.Frame):
@@ -97,9 +109,40 @@ class Application(tk.Frame):   # tkinter window
         self.master.grid_rowconfigure(5, weight=1)
         self.master.grid_columnconfigure(2, weight=1)
         # PDFConverter()
+
         self.create_widgets()
+
         self.options_window = tk.Toplevel(self.master)
+        screen_width = self.master.winfo_screenwidth() - 400
+        screen_height = self.master.winfo_screenheight()
+        self.options_window.geometry('400x'+str(screen_height-80)+"+"+str(screen_width)+"+0")
+
+
         self.create_options()
+
+    def add_List(self, tag_type):
+
+        self.add_Global_Attributes(tag_type)
+        self.add_btn['command'] = lambda: self.addPreDefinedElement(tag_type)
+
+        self.Lists_Frame = ToggledFrame(self.canv, text='Data', relief="flat", borderwidth=1)
+        self.Lists_Frame.sub_frame.grid_columnconfigure(2, weight=1)
+        self.Lists_Frame.sub_frame.grid_rowconfigure(2, weight=1)
+        self.items_hint_text = tk.Label(self.Lists_Frame.sub_frame, height=1,text="enter items with a comma (,) between them")
+        self.items_label = tk.Label(self.Lists_Frame.sub_frame, text='Items', height=1, pady=2)
+        self.items_text = tk.Text(self.Lists_Frame.sub_frame)
+        self.items_hint_text.grid(row=0, column=0, sticky='nsew')
+        self.items_label.grid(row=1, column=0, sticky='nsew')
+        self.items_text.grid(row=1, column=1, sticky='nsew')
+        self.Lists_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Lists_Frame, self.items_hint_text, self.items_label, self.items_text])
+
+        global HTML_attr
+        HTML_attr['items number'] = self.items_number_text
+        HTML_attr['items'] = self.items_text
 
     def add_Progress_Bar(self, tag_type):
 
@@ -119,6 +162,10 @@ class Application(tk.Frame):   # tkinter window
         self.value_label.grid(row=1, column=0, sticky='nsew')
         self.vlaue_text.grid(row=1, column=1, sticky='nsew')
         self.Progress_Bar_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Progress_Bar_Frame, self.max_label, self.max_text, self.value_label,self.vlaue_text])
 
         global HTML_attr
         HTML_attr['max'] = self.max_text
@@ -143,13 +190,22 @@ class Application(tk.Frame):   # tkinter window
         self.alt_text.grid(row=1, column=1, sticky='nsew')
         self.Image_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Image_Frame, self.source_label, self.source_text, self.alt_label,self.alt_text])
+
         global HTML_attr
         HTML_attr['src'] = self.source_text
         if tag_type == "img":
             HTML_attr['alt'] = self.alt_text
-        else :
-            self.alt_label['text']= 'Title:'
+        elif tag_type == 'object' :
+            self.alt_label['text']= 'Type:'
+            HTML_attr['type'] = self.alt_text
+            self.add_btn['command'] = lambda: self.addPreDefinedElement(tag_type)
+        else:
+            self.alt_label['text'] = 'Title:'
             HTML_attr['title'] = self.alt_text
+
 
 
 
@@ -169,6 +225,9 @@ class Application(tk.Frame):   # tkinter window
         self.btnType_label.grid(row=1, column=0, sticky='nsew')
         self.btnType_text.grid(row=1, column=1, sticky='nsew')
         self.Callback_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Callback_Frame, self.onClick_label, self.onClick_text, self.btnType_label,self.btnType_text])
 
         global HTML_attr
         HTML_attr['type'] = self.btnType_text
@@ -186,6 +245,9 @@ class Application(tk.Frame):   # tkinter window
         self.Href_text.grid(row=0, column=1, sticky='nsew')
         self.Href_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Href_Frame, self.Href_label, self.Href_text])
 
         global HTML_attr
         HTML_attr['href'] = self.Href_text
@@ -243,6 +305,12 @@ class Application(tk.Frame):   # tkinter window
         self.text_text.grid(row=0, column=1, sticky='nsew')
         self.Text_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Text_Frame, self.text_label, self.text_direction_label, self.text_direction_text,
+             self.text_decoration_label,
+             self.text_decoration_text, self.text_overflow_label, self.text_overflow_text, self.text_whiteSpace_label,self.text_whiteSpcae_text])
+
     def setUp_Padding(self):
         # ------------------------------------Padding-----------------------------------------------------
         self.Padding_Frame = ToggledFrame(self.canv, text='Padding', relief="flat", borderwidth=1)
@@ -265,6 +333,11 @@ class Application(tk.Frame):   # tkinter window
         self.padding_right_label.grid(row=1, column=2, sticky='nsew')
         self.padding_right_text.grid(row=1, column=3, sticky='nsew')
         self.Padding_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Padding_Frame, self.padding_top_label, self.padding_top_text, self.padding_bottom_label, self.padding_bottom_text,
+             self.padding_left_label, self.padding_left_text, self.padding_right_label, self.padding_right_text])
 
         global CSS_attr
         CSS_attr['padding-top:' ] = self.padding_top_text
@@ -295,6 +368,11 @@ class Application(tk.Frame):   # tkinter window
         self.margin_right_text.grid(row=1, column=3, sticky='nsew')
         self.Margin_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Margin_Frame, self.margin_top_label, self.margin_top_text, self.margin_bottom_label, self.margin_bottom_text,
+             self.margin_left_label, self.margin_left_text, self.margin_right_label, self.margin_right_text])
+
         global CSS_attr
         CSS_attr['margin-top:'] = self.margin_top_text
         CSS_attr['margin-bottom:'] = self.margin_bottom_text
@@ -311,6 +389,10 @@ class Application(tk.Frame):   # tkinter window
                                     relief="groove", justify='left')
         self.add_btn.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
         self.cancel_btn.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Dicesion_frame, self.add_btn, self.cancel_btn])
 
     def setUp_Font(self):
         # ------------------------------------Font-----------------------------------------------------
@@ -334,6 +416,11 @@ class Application(tk.Frame):   # tkinter window
         self.font_weight_label.grid(row=1, column=2, sticky='nsew')
         self.font_weight_text.grid(row=1, column=3, sticky='nsew')
         self.Font_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Font_Frame, self.font_family_label, self.font_family_text, self.font_size_label, self.font_size_text,
+             self.font_style_label, self.font_style_text, self.font_weight_label, self.font_weight_text])
 
         global CSS_attr
         CSS_attr['font-family:'] = self.font_family_text
@@ -373,6 +460,12 @@ class Application(tk.Frame):   # tkinter window
         self.min_width_text.grid(row=2, column=3, sticky='nsew')
         self.Dimension_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Dimension_Frame, self.height_label, self.height_text, self.width_label, self.width_text,
+             self.max_height_label, self.max_height_text, self.max_width_label, self.max_width_text, self.min_height_label,
+             self.min_height_text, self.min_width_label,self.min_width_text])
+
         global CSS_attr
         CSS_attr['height:'] = self.height_text
         CSS_attr['width:'] = self.width_text
@@ -411,6 +504,12 @@ class Application(tk.Frame):   # tkinter window
 
         self.Border_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
 
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Border_Frame, self.Border_hint_label, self.Border_top_label, self.Border_top_text, self.Border_bottom_label,
+             self.Border_bottom_text, self.Border_left_label, self.Border_left_text, self.Border_right_label, self.Border_right_text,
+             self.Border_4way_label, self.Border_4way_text])
+
         global CSS_attr
         CSS_attr['border-color:'] = self.Border_4way_text
         CSS_attr['border-top:'] = self.Border_top_text
@@ -437,6 +536,10 @@ class Application(tk.Frame):   # tkinter window
         self.bg_pos_label.grid(row=2, column=0, sticky='nsew')
         self.bg_pos_text.grid(row=2, column=1, sticky='nsew')
         self.Background_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Background_Frame, self.bg_color_label, self.bg_color_text, self.bg_img_label, self.bg_img_text,self.bg_pos_label,self.bg_pos_text])
 
         global CSS_attr
         CSS_attr['background-color:'] = self.bg_color_text
@@ -466,35 +569,48 @@ class Application(tk.Frame):   # tkinter window
         HTML_attr['id'] = self.id_text
         HTML_attr['class'] = self.class_text
 
-
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.identity_Frame, self.id_label, self.class_label, self.class_text, self.hidden_label,self.Hidden_text,self.id_text])
 
     def onselect_subcomponent(self, event):  # define diffrent functions for every element type
 
         # print('onselect_subcomponent() selected ' + self.sub_components.get(self.sub_components.curselection()))
+        global top_level_widgets
+        for widget in top_level_widgets:
+            widget.destroy()
+        self.create_options()
+
         if self.components.get(self.components.curselection()) == 'Headings and Paragragraphs':
             self.add_Global_Attributes(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+        if self.sub_components.get(self.sub_components.curselection()) == 'Text Area':
+            self.add_Global_Attributes(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+        if self.components.get(self.components.curselection()) == 'Lists':
+            self.add_List(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
         if self.sub_components.get(self.sub_components.curselection()) == 'Anchor element - <a>':
             self.add_Anchor(HTML_sub_Components_names['Anchor element - <a>'])
         if self.sub_components.get(self.sub_components.curselection()) == 'Button':
             self.add_Button(HTML_sub_Components_names['Button'])
-        if self.sub_components.get(self.sub_components.curselection()) == 'Image' or self.sub_components.get(self.sub_components.curselection()) == 'iframe':
+        if self.components.get(self.components.curselection()) == 'Embeded content' :
             self.add_Embeded_Content(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
         if self.sub_components.get(self.sub_components.curselection()) == 'Progress bar':
             self.add_Progress_Bar(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+        if self.sub_components.get(self.sub_components.curselection()) == 'Object':
+            self.add_Embeded_Content(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+
 
 
     def onselect_component(self,event):
-        # if self.sub_components.get(0) is None:
-        #     return 1
+
         self.sub_components.delete(0, tk.END)
         if self.components.get(self.components.curselection()) == 'Headings and Paragragraphs':
             self.sub_components.insert(1, 'Heading 1', 'Heading 2', 'Heading 3','Heading 4','Heading 5','Heading 6', 'Paragraph','Label')
         if self.components.get(self.components.curselection()) == 'Lists':
             self.sub_components.insert(1, 'Ordered list', 'UnOrdered list')
         if self.components.get(self.components.curselection()) == 'Embeded content':
-            self.sub_components.insert(1, 'Audio', 'Canvas','Image','Picture','SVG','Video','iframe')
+            self.sub_components.insert(1, 'Audio', 'Canvas','Image','Picture','Video','iframe')
         if self.components.get(self.components.curselection()) == 'Interactive content':
-            self.sub_components.insert(1, 'Button', 'TextArea', 'Anchor element - <a>', 'Input', 'Select', 'Progress bar','Object')
+            self.sub_components.insert(1, 'Button', 'Text Area', 'Anchor element - <a>', 'Input', 'Select', 'Progress bar','Object')
 
     def create_widgets(self):
 
@@ -532,9 +648,6 @@ class Application(tk.Frame):   # tkinter window
 
 
     def create_options(self):
-        screen_width = self.master.winfo_screenwidth() - 400
-        screen_height = self.master.winfo_screenheight()
-        self.options_window.geometry('400x'+str(screen_height-80)+"+"+str(screen_width)+"+0")
         self.canv = tk.Canvas(self.options_window,bg = 'green')
         self.Optionsscrollbar = tk.Scrollbar(self.options_window,command = self.canv.yview)
         # self.Optionsscrollbar.config(command=self.canv)
@@ -547,10 +660,10 @@ class Application(tk.Frame):   # tkinter window
         self.Dicesion_frame = tk.Frame(self.canv, relief="raised")
         self.Dicesion_frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="s")
 
+        global top_level_widgets
+        top_level_widgets.extend([self.canv,self.Optionsscrollbar,self.CSS_frame,self.Dicesion_frame])
 
-    def h1_onClick(self,event):
-        print(event)
-        self.addElement('h1')
+
 
     def addElement(self,tag):
         with open(url, 'r') as file:
@@ -582,8 +695,12 @@ class Application(tk.Frame):   # tkinter window
         for attr in HTML_attr.keys():
             # if attr == 'onclick':
             #     attributes = ''.join([attributes, attr, '="', HTML_attr[attr].get("1.0", tk.END).strip(), '" '])
-            if len(HTML_attr[attr].get("1.0",tk.END).strip()) != 0 :
-                attributes = ''.join([attributes,attr,'="',HTML_attr[attr].get("1.0",tk.END).strip(),'" '])
+            if HTML_attr[attr].winfo_class() != 'TCombobox':
+                if len(HTML_attr[attr].get("1.0", tk.END).strip()) != 0:
+                    attributes = ''.join([attributes, attr, '="', HTML_attr[attr].get("1.0", tk.END).strip(), '" '])
+            else:
+                if len(HTML_attr[attr].get().strip()) != 0:
+                    attributes = ''.join([attributes, attr, '="', HTML_attr[attr].get().strip(), '" '])
 
         if tag == 'audio':
             attributes = ''.join(['controls ',attributes])
@@ -591,7 +708,6 @@ class Application(tk.Frame):   # tkinter window
 
         add_styles = lambda style:style if style != 'style =" "' else ''
 
-        print(add_styles(style) , 'ofxs')
         tag1 = "<"+ tag+' ' + attributes +' '+add_styles(style)+ '>'+self.text_text.get('1.0',tk.END) +"</" + tag +">\n"
         data.insert(cnt + 1, """                    """ +tag1)
         # print(tag1)
@@ -619,44 +735,56 @@ class Application(tk.Frame):   # tkinter window
                 print('found it')
             cnt = cnt + 1
 
-        style = 'style =" '
+        style = ' style =" '
         attributes = ''
         global HTML_attr
         global CSS_attr
         global HTML_ready_code
-        code = str('')
-        code = HTML_ready_code[tag]
 
         for attr in CSS_attr.keys():
             if len(CSS_attr[attr].get("1.0",tk.END).strip()) != 0:
                 style = ''.join([style,attr,CSS_attr[attr].get("1.0",tk.END).strip(),';'])
         style= style + '"'
-
-
-        code = code[:code.find('<label for="">') + len('<label for="">')] + self.text_text.get('1.0',tk.END) + code[code.find('<label for="">') + len('<label for="">'):]
-        code =code[:code.find('for=""')+len('for=""')] + style+code[code.find('for=""')+len('for=""'):]
-        code =code[:code.find('for="')+len('for="')] + HTML_attr['id'].get("1.0",tk.END).strip()+code[code.find('for="')+len('for="'):]
-
-        code =code[:code.find('id="') + len('id="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('id="') + len('id="'):]
-
-        code =code[:code.find('value="')+len('value="')] + HTML_attr['value'].get("1.0",tk.END).strip()+code[code.find('value="')+len('value="'):]
-
-        code =code[:code.find('max="') + len('max="')] + HTML_attr['max'].get("1.0", tk.END).strip() + code[code.find('max="') + len('max="'):]
-
-
         add_styles = lambda style:style if style != 'style =" "' else ''
 
+        code = str('')
+        code = HTML_ready_code[tag]
+
+        if tag == 'ol' or tag == 'ul':
+            items = str('')
+            items = HTML_attr['items'].get("1.0", tk.END).strip()
+            items_list = items.split(',')
+
+            for item in items_list:
+                if tag == 'ul':
+                    code = code[:code.find('<ul>') + len('<ul>')] +'<li>'+item+'</li>' + code[code.find('<ul>') + len('<ul>'):]
+                else:
+                    code = code[:code.find('<ol>') + len('<ol>')] + '<li>' + item + '</li>' + code[code.find('<ol>') + len('<ol>'):]
+            code = code[:code.find('>') ] + add_styles(style) + code[code.find('>') :]
+
+        if tag == 'progress':
+            code = code[:code.find('<label for="">') + len('<label for="">')] + self.text_text.get('1.0',tk.END) + code[ code.find('<label for="">') + len('<label for="">'):]
+            code = code[:code.find('for=""') + len('for=""')] + add_styles(style) + code[code.find('for=""') + len('for=""'):]
+            code = code[:code.find('for="') + len('for="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('for="') + len('for="'):]
+            code = code[:code.find('id="') + len('id="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('id="') + len('id="'):]
+            code = code[:code.find('value="') + len('value="')] + HTML_attr['value'].get("1.0", tk.END).strip() + code[code.find( 'value="') + len('value="'):]
+            code = code[:code.find('max="') + len('max="')] + HTML_attr['max'].get("1.0", tk.END).strip() + code[code.find('max="') + len('max="'):]
+
+        if tag == 'object':
+            code = code[:code.find('<object ') + len('<object ')] + add_styles(style) + code[code.find('<object ') + len('<object '):]
+            code = code[:code.find('type="') + len('type="')] + HTML_attr['type'].get("1.0", tk.END).strip() + code[code.find('type="') + len('type="'):]
+            code = code[:code.find('data="') + len('data="')] + HTML_attr['src'].get("1.0", tk.END).strip() + code[code.find('data="') + len('data="'):]
+
+
+
+
         data.insert(cnt + 1, """                    """ +code)
-        # print(tag1)
+
         # and write everything back
         with open(url, 'w') as file:
             file.writelines(data)
         # PDFConverter()
 
-        # with open(url, 'r') as file:
-        #     # read a list of lines into data
-        #     data = file.readlines()
-        #     print(data)
 
 
     def addP(self):
@@ -709,20 +837,17 @@ def main():
                 <html lang="en">
                 <head>
                     <meta charset="utf-8">
-                    <meta name = "description" content = "The HTML5 Herald">
-                    <meta name = "author" content = "SitePoint">
-                    <link rel = "stylesheet" href = "css/styles.css?v=1.0">
+                    <meta name = "description" content = "pySIteBuilder">
+                    <meta name = "author" content = "Tony Nekola">
+                    <link rel = "stylesheet" href = "css/styles.css?v=3.0">
 
                     <title>The HTML5 Herald</title>
                 </head>
 
                 <body>
                     <h1>This site is created in python</h1>
-                    <br>
-                    <img src="  """ + r"""file:///C:\Users\nekol\Documents\PycharmProjects\webSite-generator\venv\Site\python.png" alt="python" width="100" height="100"><img/>
-                    <br>
+                    
                     <h2>Author: Tony Nekola</h2>
-                    <br>
                 </body>
                 </html>""")
 
