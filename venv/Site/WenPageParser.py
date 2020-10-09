@@ -1,4 +1,5 @@
 from html.parser import HTMLParser
+import tkinter as tk
 
 class Node(object):
     def __init__(self,type = None,children = None,attributes = None):
@@ -10,9 +11,16 @@ class Node(object):
             self.children = children
 
 class Parser(HTMLParser):
+
+  def __init__(self, DomTree ):
+      self.DomTree = DomTree
+
+
+
   # method to append the start tag to the list start_tags.
   def handle_starttag(self, tag, attrs):
     print("Encountered a start tag:", tag)
+    self.DomTree.insert(tk.END,tag);
     global  nodes
     if tag == 'body':
         nodes.clear()
