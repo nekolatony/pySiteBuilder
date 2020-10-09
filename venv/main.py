@@ -22,7 +22,7 @@ subCombonent_flag = 0
 'Button', 'Text Area', 'Anchor element - <a>', 'Input', 'Select', 'Progress bar','Object'
 HTML_sub_Components_names ={'Heading 1':'h1','Heading 2':'h2','Heading 3':'h3','Heading 4':'h4','Heading 5':'h5','Heading 6':'h6','Paragraph':'p','Label':'label'
                             ,'Ordered list':'ol','UnOrdered list':'ul','Audio':'audio','Image':'img','Canvas':'canvas','Picture':'picture','SVG':'svg','Video':'video','iframe':'iframe'
-                            , 'Button': 'button' ,'Text Area':'textarea','Input':'input','Select':'select','Progress bar':'progress','Object':'object'
+                            , 'Button': 'button' ,'Text Area':'textarea','Input -(form)':'input','Select':'select','Progress bar':'progress','Object':'object'
                             ,'Anchor element - <a>':'a'}
 
 CSS_attr = {}
@@ -42,7 +42,15 @@ HTML_ready_code = {'progress':""""<label for="">  </label>
                    <picture>
                     <source media="" srcset="">
                    <img src="" alt="" /></picture>'''
-                   ,'object':'''<object  data="" type=""></object>'''}
+                   ,'object':'''<object  data="" type=""></object>''',
+                   'input':'''<label for=""></label>
+                                <input  type="" id="" name="" required ><br>'''
+                   ,'select':'''<label for=""></label>
+
+                                <select name="" id="">
+                                    <option value="">--Please choose an option--</option>
+                                    <option value=""></option>
+                               </select>'''}
 
 
 class ToggledFrame(tk.Frame):
@@ -119,6 +127,60 @@ class Application(tk.Frame):   # tkinter window
 
 
         self.create_options()
+
+    def add_Select(self, tag_type):
+
+        self.add_Global_Attributes(tag_type)
+        self.add_btn['command'] = lambda: self.addPreDefinedElement(tag_type)
+
+        self.Select_Frame = ToggledFrame(self.canv, text='Select data', relief="flat", borderwidth=1)
+        self.Select_Frame.sub_frame.grid_columnconfigure(2, weight=1)
+        self.Select_Frame.sub_frame.grid_rowconfigure(3, weight=1)
+        self.name_label = tk.Label(self.Select_Frame.sub_frame, height=1, text="Name:")
+        self.name_text = tk.Text(self.Select_Frame.sub_frame, height=1)
+        self.example_label = tk.Label(self.Select_Frame.sub_frame, height=1, text="Enter the value and name of \neach option on a seperate line")
+        self.options_label = tk.Label(self.Select_Frame.sub_frame, height=1, text="Options")
+        self.options_text = tk.Text(self.Select_Frame.sub_frame, height=3)
+        self.name_label.grid(row=0, column=0, sticky='nsew')
+        self.name_text.grid(row=0, column=1, sticky='nsew')
+        self.options_label.grid(row=1, column=0, sticky='nsew')
+        self.options_text.grid(row=1, column=1, sticky='nsew')
+        self.example_label.grid(row=2, sticky='nsew')
+        self.Select_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Select_Frame, self.name_label, self.example_label, self.options_label, self.options_text])
+
+        global HTML_attr
+        HTML_attr['name'] = self.name_text
+        HTML_attr['options'] = self.options_text
+
+    def add_Form(self, tag_type):
+
+        self.add_Global_Attributes(tag_type)
+        self.add_btn['command'] = lambda: self.addPreDefinedElement(tag_type)
+
+        self.Form_Frame = ToggledFrame(self.canv, text='Form data', relief="flat", borderwidth=1)
+        self.Form_Frame.sub_frame.grid_columnconfigure(2, weight=1)
+        self.Form_Frame.sub_frame.grid_rowconfigure(2, weight=1)
+        self.type_label = tk.Label(self.Form_Frame.sub_frame, height=1,text="Type")
+        self.type_text = ttk.Combobox(self.Form_Frame.sub_frame,values=['color', 'progress','button', 'checkbox','date', 'datetime-local', 'email','file', 'image', 'month','number', 'password', 'radio','search', 'tel','text', 'time', 'url','week'],state="readonly")
+        self.others_label = tk.Label(self.Form_Frame.sub_frame, height=1, text="Other attributes")
+        self.others_text = tk.Text(self.Form_Frame.sub_frame, height=3)
+        self.type_label.grid(row=0, column=0, sticky='nsew')
+        self.type_text.grid(row=0, column=1, sticky='nsew')
+        self.others_label.grid(row=1, column=0, sticky='nsew')
+        self.others_text.grid(row=1, column=1, sticky='nsew')
+        self.Form_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
+
+        global top_level_widgets
+        top_level_widgets.extend(
+            [self.Form_Frame, self.type_label, self.type_text,self.others_label,self.others_text])
+
+        global HTML_attr
+        HTML_attr['type'] = self.type_text
+        HTML_attr['other'] = self.others_text
 
     def add_List(self, tag_type):
 
@@ -579,6 +641,7 @@ class Application(tk.Frame):   # tkinter window
         global top_level_widgets
         for widget in top_level_widgets:
             widget.destroy()
+        top_level_widgets.clear()
         self.create_options()
 
         if self.components.get(self.components.curselection()) == 'Headings and Paragragraphs':
@@ -597,6 +660,10 @@ class Application(tk.Frame):   # tkinter window
             self.add_Progress_Bar(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
         if self.sub_components.get(self.sub_components.curselection()) == 'Object':
             self.add_Embeded_Content(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+        if self.sub_components.get(self.sub_components.curselection()) == 'Input -(form)':
+            self.add_Form(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
+        if self.sub_components.get(self.sub_components.curselection()) == 'Select':
+            self.add_Select(HTML_sub_Components_names[self.sub_components.get(self.sub_components.curselection())])
 
 
 
@@ -610,7 +677,7 @@ class Application(tk.Frame):   # tkinter window
         if self.components.get(self.components.curselection()) == 'Embeded content':
             self.sub_components.insert(1, 'Audio', 'Canvas','Image','Picture','Video','iframe')
         if self.components.get(self.components.curselection()) == 'Interactive content':
-            self.sub_components.insert(1, 'Button', 'Text Area', 'Anchor element - <a>', 'Input', 'Select', 'Progress bar','Object')
+            self.sub_components.insert(1, 'Button', 'Text Area', 'Anchor element - <a>', 'Input -(form)', 'Select', 'Progress bar','Object')
 
     def create_widgets(self):
 
@@ -774,9 +841,27 @@ class Application(tk.Frame):   # tkinter window
             code = code[:code.find('<object ') + len('<object ')] + add_styles(style) + code[code.find('<object ') + len('<object '):]
             code = code[:code.find('type="') + len('type="')] + HTML_attr['type'].get("1.0", tk.END).strip() + code[code.find('type="') + len('type="'):]
             code = code[:code.find('data="') + len('data="')] + HTML_attr['src'].get("1.0", tk.END).strip() + code[code.find('data="') + len('data="'):]
+        if tag == 'input':
+            code = code[:code.find('<label for="">') + len('<label for="">')] + self.text_text.get('1.0',tk.END) + code[code.find('<label for="">') + len('<label for="">'):]
+            code = code[:code.find('<input ') + len('<input ')] + add_styles(style) + code[code.find('<input ') + len('<input '):]
+            code = code[:code.find('type="') + len('type="')] + HTML_attr['type'].get().strip() + code[code.find('type="') + len('type="'):]
+            code = code[:code.find('id="') + len('id="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('id="') + len('id="'):]
+            code = code[:code.find('for="') + len('for="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('for="') + len('for="'):]
+            code = code[:code.find('name="') + len('name="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('name="') + len('name="'):]
+            code = code[:code.find('required ') + len('required ')] + HTML_attr['other'].get("1.0", tk.END).strip() + code[code.find('required ') + len('required '):]
 
+        if tag == 'select':
+            options = HTML_attr['options'].get("1.0", tk.END).strip()
+            options_list = options.split('\n')
+            code_to_add = ''
+            for option in options_list:
+                code_to_add =code_to_add+'<option value="'+ option.split(' ')[0]+'">'+ option.split(' ')[1]+'</option>\n'
 
-
+            code = code[:code.find('<option value="">--Please choose an option--</option>') + len('<option value="">--Please choose an option--</option>')]\
+                   + code_to_add+ code[code.find('<option value="">--Please choose an option--</option>') + len('<option value="">--Please choose an option--</option>'):]
+            code = code[:code.find('for="') + len('for="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('for="') + len('for="'):]
+            code = code[:code.find('id="') + len('id="')] + HTML_attr['id'].get("1.0", tk.END).strip() + code[code.find('id="') + len('id="'):]
+            code = code[:code.find('name="') + len('name="')] + HTML_attr['name'].get("1.0", tk.END).strip() + code[code.find('name="') + len('name="'):]
 
         data.insert(cnt + 1, """                    """ +code)
 
@@ -786,29 +871,6 @@ class Application(tk.Frame):   # tkinter window
         # PDFConverter()
 
 
-
-    def addP(self):
-        with open(url, 'r') as file:
-            # read a list of lines into data
-            data = file.readlines()
-
-        print(len(data))
-        cnt = 0
-        for line in data:
-            if line.find('<body>')!= -1:
-                break;
-                print('found it')
-            cnt = cnt + 1
-
-
-        data.insert(cnt+1 ,"""                     </br><p>AddP is working perfectly</p></br>\n""")
-
-
-        # and write everything back
-        with open(url, 'w') as file:
-            file.writelines(data)
-
-        # PDFConverter()
 
 
 
