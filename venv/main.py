@@ -1,11 +1,9 @@
-from PIL import Image,ImageTk
-import cv2 as cv2
-import numpy as np
 try:
     import tkinter as tk
     from tkinter import ttk
 except ImportError:
     import Tkinter as tk
+    from tkinter import ttk
 from tkinterhtml import HtmlFrame
 import webview
 import threading
@@ -14,8 +12,7 @@ from pdf2image import convert_from_path
 # import browser
 import webview
 from HTMLParser.Parser import *
-
-
+from SiteParser import get_DOM_tree
 url = "Site/site.html"
 global HtmlViewer
 subCombonent_flag = 0
@@ -696,12 +693,15 @@ class Application(tk.Frame):   # tkinter window
         self.sub_components_frame = tk.Frame(self.master,height = 100)
         self.sub_components_label = tk.Label(self.sub_components_frame,text = 'HTML sub-componenets')
         self.sub_components_label.pack(anchor = tk.CENTER)
-        self.sub_components = tk.Listbox(self.sub_components_frame, selectmode=tk.SINGLE,height= 100,exportselection=0)
+        self.sub_components = tk.Listbox(self.sub_components_frame, selectmode=tk.SINGLE,height= 10,exportselection=0)
         self.sub_components_frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
         self.sub_components.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
         self.sub_components.bind('<<ListboxSelect>>', self.onselect_subcomponent)  #callback
 
-        self.TreeView_Frame =  tk.Frame(self.master)
+        self.create_DOM_TreeView()
+
+    def create_DOM_TreeView(self):
+        self.TreeView_Frame = tk.Frame(self.master)
         self.TreeView_label = tk.Label(self.TreeView_Frame, text='components Tree')
         self.TreeView_label.pack(anchor=tk.CENTER)
         self.TreeView = tk.Listbox(self.TreeView_Frame, selectmode=tk.SINGLE, height=100)
@@ -710,9 +710,8 @@ class Application(tk.Frame):   # tkinter window
         self.TreeView['yscrollcommand'] = self.Treescrollbar.set
         self.TreeView_Frame.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
         self.TreeView.pack(fill="x", expand=1, pady=2, padx=2, anchor="n")
-        self.TreeView.insert(1, 'to be continued ...','TreeView of the components','is a work in progress')
-
-
+        for tag in get_DOM_tree():
+            self.TreeView.insert(1, tag)
 
     def create_options(self):
         self.canv = tk.Canvas(self.options_window,bg = 'green')
@@ -782,11 +781,14 @@ class Application(tk.Frame):   # tkinter window
         with open(url, 'w') as file:
             file.writelines(data)
         # PDFConverter()
+        self.TreeView.insert(0, tag)
 
-        # with open(url, 'r') as file:
-        #     # read a list of lines into data
-        #     data = file.readlines()
-        #     print(data)
+        # self.TreeView.delete(0,tk.END)
+        # self.TreeView.destroy()
+        # self.TreeView_Frame.destroy()
+        # self.Treescrollbar.destroy()
+        # self.TreeView_label.destroy()
+        # self.create_DOM_TreeView()
 
 
     def addPreDefinedElement(self, tag):
@@ -869,9 +871,12 @@ class Application(tk.Frame):   # tkinter window
         with open(url, 'w') as file:
             file.writelines(data)
         # PDFConverter()
-
-
-
+        # self.TreeView.destroy()
+        # self.TreeView_Frame.destroy()
+        # self.Treescrollbar.destroy()
+        # self.TreeView_label.destroy()
+        # self.create_DOM_TreeView()
+        self.TreeView.insert(0, tag)
 
 
 def load_html(window):
@@ -893,27 +898,54 @@ def main():
 
     f = open(url, "w")
 
-    # main html template
-    f.write("""<!doctype html>
+    # # main html template
+    # f.write("""<!doctype html>
+    #
+    #             <html lang="en">
+    #             <head>
+    #                 <meta charset="utf-8">
+    #                 <meta name = "description" content = "pySIteBuilder">
+    #                 <meta name = "author" content = "Tony Nekola">
+    #                 <link rel = "stylesheet" href = "css/styles.css?v=3.0">
+    #
+    #                 <title>The HTML5 Herald</title>
+    #             </head>
+    #
+    #             <body id="sss">
+    #                 <h1>This site is created in python</h1>
+    #
+    #                 <h2>Author: Tony Nekola</h2>
+    #             </body>
+    #             </html>""")
 
-                <html lang="en">
-                <head>
-                    <meta charset="utf-8">
-                    <meta name = "description" content = "pySIteBuilder">
-                    <meta name = "author" content = "Tony Nekola">
-                    <link rel = "stylesheet" href = "css/styles.css?v=3.0">
-
-                    <title>The HTML5 Herald</title>
-                </head>
-
-                <body>
-                    <h1>This site is created in python</h1>
-                    
-                    <h2>Author: Tony Nekola</h2>
-                </body>
-                </html>""")
-
-
+    f.write('''<html>
+<!-- Text between angle brackets is an HTML tag and is not displayed.
+Most tags, such as the HTML and /HTML tags that surround the contents of
+a page, come in pairs; some tags, like HR, for a horizontal rule, stand 
+alone. Comments, such as the text you're reading, are not displayed when
+the Web page is shown. The information between the HEAD and /HEAD tags is 
+not displayed. The information between the BODY and /BODY tags is displayed.-->
+<head>
+<title>Enter a title, displayed at the top of the window.</title>
+</head>
+<!-- The information between the BODY and /BODY tags is displayed.-->
+<body>
+<h1>Enter the main heading, usually the same as the title.</h1>
+<p>Be <b>bold</b> in stating your key points. Put them in a list: </p>
+<ul>
+<li>The first item in your list</li>
+<li>The second item; <i>italicize</i> key words</li>
+</ul>
+<p>Improve your image by including an image. </p>
+<p><img src="http://www.mygifs.com/CoverImage.gif" alt="A Great HTML Resource"></p>
+<p>Add a link to your favorite <a href="https://www.dummies.com/">Web site</a>.
+Break up your page with a horizontal rule or two. </p>
+<hr>
+<p>Finally, link to <a href="page2.html">another page</a> in your own Web site.</p>
+<!-- And add a copyright notice.-->
+<p>&#169; Wiley Publishing, 2011</p>
+</body>
+</html>''')
     f.close()
 
 
